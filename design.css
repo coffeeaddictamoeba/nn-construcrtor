@@ -1,0 +1,144 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #2e2e30;
+}
+
+#palette-and-grid {
+    display: flex;
+    gap: 20px;
+}
+
+#color-palette {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: self-start;
+}
+
+.color-swatch {
+    width: 30px;
+    height: 30px;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.color-swatch.selected {
+    border: 2px solid black;
+}
+
+#grid-container {
+    display: grid;
+    border: 2px solid black;
+    overflow: hidden;
+    user-select: none;
+}
+
+#gallery-container {
+    margin-top: 20px;
+}
+
+.image-card {
+    display: inline-block;
+    margin: 10px;
+    text-align: center;
+    border: 1px solid lightgray;
+    border-radius: 8px;
+    padding: 10px;
+    width: 120px;
+    background-color: #f9f9f9;
+}
+
+.image-card img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.image-card p {
+    font-size: 14px;
+    margin: 5px 0;
+}
+
+.image-card button {
+    display: block;
+    margin: 5px auto;
+    padding: 5px 10px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+#images-category {
+    display: inline-block;
+    margin: 10px;
+    text-align: center;
+    border: 1px solid lightgray;
+    border-radius: 8px;
+    padding: 10px;
+    width: 120px;
+    background-color: #f9f9f9;
+}
+
+.category-section {
+    margin: 20px 0;
+    padding: 10px;
+    border: 1px solid lightgray;
+    border-radius: 5px;
+}
+
+.category-header {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.image-card {
+    display: inline-block;
+    margin: 10px;
+    padding: 10px;
+    border: 1px solid lightgray;
+    background: #f9f9f9;
+    border-radius: 5px;
+    text-align: center;
+    width: 150px;
+}
+
+.thumbnail {
+    background: lightgray;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+}
+
+.grid-cell {
+    background-color: white;
+    border: 1px solid lightgray;
+    cursor: pointer;
+}
+
+.grid-button:active {
+    transform: scale(0.95); /* Optional click effect */
+}
+
+canvas {
+      display: block;
+      margin: 20px auto;
+    }
+#controls {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+}
+
+button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+}

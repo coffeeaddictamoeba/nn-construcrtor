@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Custom ML Model</title>
+		<link rel="stylesheet" href="design.css">
+	</head>
+	<body>
+		<script async src="main.js"></script>
+
+		<div id="palette-and-grid">
+
+			<!-- Color palette for adjusting the grid color -->
+			<div id="color-palette"></div>
+			<div>
+				<h3 align=center style="margin-top:0; color:lightgoldenrodyellow">Let's create some data for your AI!</h3>
+
+				<!-- Grid for creating data for neural network -->
+				<div id="grid-container"></div>
+
+				<!-- Buttons for selecting grid size -->
+				<div style="margin-top:10px" id="grid-controls" align=center>
+					<button id="smallGridButton">8x8</button>
+					<button id="midGridButton">16x16</button>
+					<button id="largeGridButton">32x32</button>
+					<button id="clearGridButton">Reset</button>
+					<button id="validateNNButton">Validate</button>
+
+					<!-- Selection list for all created categories -->
+					<div id="category-selection" style="margin-top:10px">
+						<label for="category-dropdown" style="color:lightgoldenrodyellow">Category: </label>
+						<select id="category-dropdown">
+							<!-- Dynamically updated -->
+						</select>
+						<button id="confirm-add-image">Add Image</button>
+					</div>
+				</div>
+			</div>
+
+			<!-- Field for setting the architecture for custom neural network -->
+			<div id="nn-container"  style="width:1000px">
+				<div align=center>
+					<h3 style="margin-top:0; color:lightgoldenrodyellow">Adjust the NN architecture</h3>
+					<div id="controls">
+					  	<button id="addLayerButton">Add Layer</button>
+					  	<button id="removeLayerButton">Remove Layer</button>
+
+						<div id="layer-selection">
+							<label for="layer-dropdown" style="color:lightgoldenrodyellow">Layer: </label>
+							<select id="layer-dropdown">
+								<!-- Dynamically updated -->
+							</select>
+							<button id="confirm-add-neuron">Add Neuron</button>
+							<button id="confirm-remove-neuron">Remove Neuron</button>
+						</div>
+
+					</div>
+					<canvas id="networkCanvas" width="800" height="500"></canvas>
+					<div id="send-data">
+						<button id="train-nn">Train</button>
+						<button id="reset-nn">Reset</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Field where all image data is stored -->
+		<div id="gallery-container">
+			<h2 style="color:lightgoldenrodyellow">Your Custom Dataset</h2>
+			<button id="addCategoryButton">Add category</button>
+			<button id="saveAllImagesButton">Save All</button>
+			<div id="gallery"></div>
+		</div>
+	</body>
+</html>
