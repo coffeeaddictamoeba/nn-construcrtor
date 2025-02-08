@@ -35,7 +35,10 @@ const gridModule = (() => {
                 cell.classList.add('grid-cell');
                 cell.style.backgroundColor = color;
 
-                const changeColor = () => { cell.style.backgroundColor = selectedColor;};
+                const changeColor = () => {
+                    cell.style.backgroundColor = selectedColor;
+                    currentGrid[rowIndex][colIndex] = selectedColor;
+                };
 
                 cell.addEventListener('mousedown', changeColor);
                 cell.addEventListener('mouseover', () => {
@@ -57,11 +60,10 @@ const gridModule = (() => {
     const getCols = () => gridSize.cols;
     const getRows = () => gridSize.rows;
 
-    const resetGrid = () => {
-        currentGrid = createEmptyGrid(gridSize.rows, gridSize.cols);
+    const setGrid = (newGrid = createEmptyGrid(gridSize.rows, gridSize.cols)) => {
+        currentGrid = newGrid;
         renderGrid();
-    };
-
+    }
 
     return {
         createGrid,
@@ -69,7 +71,7 @@ const gridModule = (() => {
         renderGrid,
         setSelectedColor,
         getCurrentGrid,
-        resetGrid,
+        setGrid,
         getRows,
         getCols
     };

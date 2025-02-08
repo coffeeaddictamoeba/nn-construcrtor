@@ -88,11 +88,15 @@ const galleryModule = (() => {
     const loadImage = (category, index) => {
         const image = categories[category][index];
         if (image) {
-            gridModule.createGrid(image.grid.length, image.grid[0].length);
+            if (confirm('Your current image will be reset. Proceed?')) {
+                const newGrid = JSON.parse(JSON.stringify(image.grid));
+                gridModule.setGrid(newGrid);
+            }
         } else {
             alert('Image not found.');
         }
     };
+
 
     const deleteImage = (category, index) => {
         if (categories[category]) {
