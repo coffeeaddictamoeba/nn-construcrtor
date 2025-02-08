@@ -138,6 +138,11 @@ canvas {
       margin-bottom: 20px;
 }
 
+.remove-category {
+    display: flex;
+    justify-content: right;
+}
+
 button:disabled {
       background-color: #ccc;
       cursor: not-allowed;
