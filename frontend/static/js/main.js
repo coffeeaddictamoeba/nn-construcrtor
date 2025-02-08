@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     colorPaletteModule.createColorPalette();
     gridModule.createGrid(8, 8);
     neuralNetworkModule.drawNetwork();
+    networkParamsModule.initializeNetworkParams();
 
     // Grid controls
     document.getElementById('smallGridButton').addEventListener('click', () => gridModule.resizeGrid(8, 8));
@@ -25,6 +26,4 @@ document.addEventListener('DOMContentLoaded', () => {
     //document.getElementById('validateNNButton') // validation of nn by real-time created image on the grid
     //document.getElementById('saveAllImagesButton') // save all images as data for nn training
     //document.getElementById('train-nn') // send all parameters from front to back (layers, categories, etc.)
-
-    // add some control for activation and loss functions
 });

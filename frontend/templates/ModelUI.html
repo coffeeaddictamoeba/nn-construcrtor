@@ -38,9 +38,11 @@
 			</div>
 
 			<!-- Field for setting the architecture for custom neural network -->
-			<div id="nn-container"  style="width:1000px">
+			<div id="nn-container"  style="width:700px">
 				<div align=center>
+
 					<h3 style="margin-top:0; color:lightgoldenrodyellow">Adjust the NN architecture</h3>
+
 					<div id="controls">
 					  	<button id="addLayerButton">Add Layer</button>
 					  	<button id="removeLayerButton">Remove Layer</button>
@@ -55,13 +57,24 @@
 						</div>
 
 					</div>
+
 					<canvas id="networkCanvas" width="800" height="500"></canvas>
+
 					<div id="send-data">
 						<button id="train-nn">Train</button>
 						<button id="reset-nn">Reset</button>
 					</div>
 				</div>
 			</div>
+
+
+			<div id="network-params">
+				<h3 style="margin-top:0; color:lightgoldenrodyellow">Parameters</h3>
+				<div id="activation-params"></div>
+				<div><br></div>
+				<div id="loss-params"></div>
+			</div>
+
 		</div>
 
 		<!-- Field where all image data is stored -->
@@ -77,5 +90,6 @@
 		<script src="../static/js/gallery.js"></script>
 		<script src="../static/js/neuralNetwork.js"></script>
 		<script src="../static/js/main.js"></script>
+		<script src="../static/js/networkParams.js"></script>
 	</body>
 </html>

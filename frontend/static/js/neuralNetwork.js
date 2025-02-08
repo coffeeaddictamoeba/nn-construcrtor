@@ -117,6 +117,7 @@ const neuralNetworkModule = (() => {
             });
             updateNetwork();
             updateLayersDropdown();
+            networkParamsModule.updateActivationParams();
         }
     };
 
