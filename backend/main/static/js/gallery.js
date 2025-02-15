@@ -107,6 +107,40 @@ const galleryModule = (() => {
 
     const getCategories = () => categories;
 
+    const sendImageData = async (category, index) => {
+        const imageData = {
+            name: categories[category][index].name,
+            category: category,
+            data: JSON.stringify(categories[category][index])
+        };
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/images/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(imageData)
+            });
+
+            if (response.ok) {
+                console.log(`Image "${name}" saved successfully.`);
+            } else {
+                const errorData = await response.json();
+                console.log(`Error: ${JSON.stringify(errorData)}`);
+            }
+        } catch (error) {
+            console.error('Error saving image:', error);
+            console.log('Failed to save image.');
+        }
+    };
+
+    const sendAllImagesData = async () => {
+        Object.entries(categories).forEach(([category, images]) => {
+            images.forEach((image, index) => {
+                sendImageData(category, index);
+            });
+        });
+    };
+
     return {
         addCategory,
         removeCategory,
@@ -114,6 +148,7 @@ const galleryModule = (() => {
         renderGallery,
         loadImage,
         deleteImage,
-        getCategories
+        getCategories,
+        sendAllImagesData
     };
 })();

@@ -23,7 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('reset-nn').addEventListener('click', neuralNetworkModule.resetNetwork);
 
     // TODO: add logic for images save handling
+    document.getElementById('saveAllImagesButton').addEventListener('click', galleryModule.sendAllImagesData);
+
     //document.getElementById('validateNNButton') // validation of nn by real-time created image on the grid
-    //document.getElementById('saveAllImagesButton') // save all images as data for nn training
     //document.getElementById('train-nn') // send all parameters from front to back (layers, categories, etc.)
 });
