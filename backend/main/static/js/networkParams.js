@@ -96,9 +96,47 @@ const networkParamsModule = (() => {
         setActivationParams();
     }
 
+    const getCsrfToken = () => {
+        return document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+    };
+
+    const sendNetworkConfigToBackend = () => {
+        const networkData = {
+            layers: neuralNetworkModule.getLayers(),
+            parameters: networkParamsModule.getNetworkParams()
+        };
+
+        fetch('/api/save-network-config/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify(networkData)
+        })
+        .then(response => response.json())
+        .then(data => console.log('Server response:', data))
+        .catch(error => console.error('Error:', error));
+    };
+
+    const sendPredictionRequest = (inputData) => {
+        fetch('/api/predict/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ input: inputData })
+        })
+        .then(response => response.json())
+        .then(data => console.log('Prediction:', data.prediction))
+        .catch(error => console.error('Error:', error));
+    };
+
     return {
         updateActivationParams,
         initializeNetworkParams,
-        getNetworkParams
+        getNetworkParams,
+        sendNetworkConfigToBackend,
+        sendPredictionRequest
     };
 })();

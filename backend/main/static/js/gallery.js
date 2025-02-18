@@ -44,6 +44,7 @@ const galleryModule = (() => {
         }
     };
 
+    // TODO: check if all images have same dimension in category(?)
     const saveImageToCategory = () => {
         const category = categoryDropdown.value;
         const name = prompt('Enter a name for the image:', 'Untitled Image');
@@ -90,6 +91,7 @@ const galleryModule = (() => {
         if (image) {
             if (confirm('Your current image will be reset. Proceed?')) {
                 const newGrid = JSON.parse(JSON.stringify(image.grid));
+                gridModule.resizeGrid(newGrid.length, newGrid.length);
                 gridModule.setGrid(newGrid);
             }
         } else {
@@ -115,7 +117,7 @@ const galleryModule = (() => {
         };
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/images/', {
+           const response = await fetch('/api/save-image/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(imageData)

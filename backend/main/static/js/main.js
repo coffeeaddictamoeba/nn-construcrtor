@@ -24,7 +24,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // TODO: add logic for images save handling
     document.getElementById('saveAllImagesButton').addEventListener('click', galleryModule.sendAllImagesData);
+    document.getElementById('train-nn').addEventListener('click', networkParamsModule.sendNetworkConfigToBackend);
 
-    //document.getElementById('validateNNButton') // validation of nn by real-time created image on the grid
-    //document.getElementById('train-nn') // send all parameters from front to back (layers, categories, etc.)
+    // TODO: add model logic
+    document.getElementById('validateNNButton').addEventListener('click', networkParamsModule.sendPredictionRequest) // validation of nn by real-time created image on the grid
 });

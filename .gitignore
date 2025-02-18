@@ -170,4 +170,5 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-uploads/
+backend/main/uploads/
+backend/network_config.json
