@@ -5,11 +5,16 @@ import numpy as np
 import tensorflow as tf
 
 from django.conf import settings
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.hashers import make_password
 from django.core.files.storage import default_storage
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
+
+from .forms import UserRegisterForm, UserLoginForm
 from .models import Category, Image
 from .serializers import CategorySerializer, ImageSerializer
 from django.http import JsonResponse
@@ -46,6 +51,7 @@ class ImageViewSet(viewsets.ModelViewSet):
         image = Image.objects.create(name=name, category=category, file_name=image_file.name)
         return Response(ImageSerializer(image).data, status=status.HTTP_201_CREATED)
 
+@login_required(login_url='/register/')
 def index(request):
     return render(request, 'index.html')
 
@@ -130,3 +136,15 @@ def save_image(request):
             return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+
+def register(request):
+    if request.method == "POST":
+        form = UserRegisterForm(request.POST)
+        if form.is_valid():
+            form.save()  # Saves user and hashes password
+            return redirect('index')  # Redirect after successful registration
+    else:
+        form = UserRegisterForm()
+
+    return render(request, 'register.html', {'form': form})
