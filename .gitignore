@@ -172,3 +172,4 @@ cython_debug/
 
 backend/main/uploads/
 backend/network_config.json
+.idea
