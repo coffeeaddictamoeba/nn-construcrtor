@@ -4,55 +4,32 @@ import json
 import numpy as np
 import tensorflow as tf
 
-from django.conf import settings
 from django.contrib.auth import login, authenticate
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.hashers import make_password
-from django.core.files.storage import default_storage
 from django.shortcuts import render, redirect
 from rest_framework import viewsets, status
-from rest_framework.response import Response
-from rest_framework.parsers import MultiPartParser, FormParser
 
 from .forms import UserRegisterForm, UserLoginForm
 from .models import Category, Image
 from .serializers import CategorySerializer, ImageSerializer
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.permissions import IsAuthenticated
 
 #from neural_network import *
 
 UPLOAD_DIR = "uploads"
 
 class CategoryViewSet(viewsets.ModelViewSet):
-    queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = [IsAuthenticated]
 
-class ImageViewSet(viewsets.ModelViewSet):
-    queryset = Image.objects.all()
-    serializer_class = ImageSerializer
-    parser_classes = [MultiPartParser, FormParser]  # Allow file uploads
+    def get_queryset(self):
+        return Category.objects.filter(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
-        category_name = request.data.get('category')
-        name = request.data.get('name')
-        image_file = request.FILES.get('image')
+        request.data['user'] = request.user.id
+        return super().create(request, *args, **kwargs)
 
-        if not category_name or not name or not image_file:
-            return Response({"error": "Missing fields"}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Save the file to /uploads/
-        file_path = default_storage.save(os.path.join('uploads', image_file.name), image_file)
-
-        # Get or create the category
-        category, _ = Category.objects.get_or_create(name=category_name)
-
-        # Save image metadata to database
-        image = Image.objects.create(name=name, category=category, file_name=image_file.name)
-        return Response(ImageSerializer(image).data, status=status.HTTP_201_CREATED)
-
-#@login_required(login_url='/register/')
-# TODO: add login routine
 def index(request):
     return render(request, 'index.html')
 
@@ -63,7 +40,6 @@ def save_network_config(request):
             layers = data.get('layers', [])
             parameters = data.get('parameters', {})
 
-            # Process the received data (e.g., save to database or file)
             print("Received Layers:", layers)
             print("Received Parameters:", parameters)
 
@@ -103,14 +79,14 @@ def save_image(request):
 
             image_name = data.get('name')
             category_name = data.get('category')
-            image_data = data.get('data')  # Expecting base64-encoded image data
+            image_data = data.get('data')
 
             if not image_name or not category_name or not image_data:
                 return JsonResponse({'error': 'Missing fields'}, status=400)
 
             # Decode base64 image
             format, imgstr = image_data.split(';base64,')
-            ext = format.split('/')[-1]  # Get file extension (e.g., png, jpeg)
+            ext = format.split('/')[-1]
 
             if ext not in ['png', 'jpg', 'jpeg']:
                 return JsonResponse({'error': 'Invalid image format'}, status=400)
@@ -163,7 +139,7 @@ def user_login(request):
                 login(request, user)
                 return redirect("index")  # Redirect to the home page
             else:
-                form.add_error(None, "Invalid username or password")  # Display error message
+                form.add_error(None, "Invalid username or password")
 
     else:
         form = UserLoginForm()

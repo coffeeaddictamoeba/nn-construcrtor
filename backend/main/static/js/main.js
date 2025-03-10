@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     neuralNetworkModule.drawNetwork();
     networkParamsModule.initializeNetworkParams();
 
+
     // Grid controls
     document.getElementById('smallGridButton').addEventListener('click', () => gridModule.resizeGrid(8, 8));
     document.getElementById('midGridButton').addEventListener('click', () => gridModule.resizeGrid(16, 16));
@@ -28,4 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // TODO: add model logic
     document.getElementById('validateNNButton').addEventListener('click', networkParamsModule.sendPredictionRequest) // validation of nn by real-time created image on the grid
+
+    galleryModule.fetchUserCategories();
 });

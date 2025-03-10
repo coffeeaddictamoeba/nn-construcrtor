@@ -1,12 +1,10 @@
 from django.contrib.auth.views import LogoutView
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import CategoryViewSet, ImageViewSet, register
 from . import views
 
 router = DefaultRouter()
-router.register(r'categories', CategoryViewSet)
-router.register(r'images', ImageViewSet)
+router.register(r'categories', views.CategoryViewSet, basename='category')
 
 urlpatterns = [
     path('index/', views.index, name='index'),

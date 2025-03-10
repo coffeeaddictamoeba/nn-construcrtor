@@ -113,7 +113,7 @@ const galleryModule = (() => {
         const imageData = {
             name: categories[category][index].name,
             category: category,
-            data: JSON.stringify(categories[category][index])
+            data: JSON.stringify(categories[category][index].grid)
         };
 
         try {
@@ -143,6 +143,29 @@ const galleryModule = (() => {
         });
     };
 
+    const loadCategories = (categoriesData) => {
+        categories = {};
+        categoriesData.forEach(category => {
+            categories[category.name] = category.images || [];
+        });
+        updateCategoryDropdown();
+        renderGallery();
+    };
+
+    const fetchUserCategories = async () => {
+        try {
+            const response = await fetch('/api/categories/', { credentials: 'include' });
+            if (response.ok) {
+                const categoriesData = await response.json();
+                loadCategories(categoriesData);
+            } else {
+                console.error("Failed to load categories:", response.statusText);
+            }
+        } catch (error) {
+            console.error("Error fetching categories:", error);
+        }
+    }
+
     return {
         addCategory,
         removeCategory,
@@ -151,6 +174,7 @@ const galleryModule = (() => {
         loadImage,
         deleteImage,
         getCategories,
-        sendAllImagesData
+        sendAllImagesData,
+        fetchUserCategories
     };
 })();
