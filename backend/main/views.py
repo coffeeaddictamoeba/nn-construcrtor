@@ -5,8 +5,10 @@ import numpy as np
 import tensorflow as tf
 
 from django.contrib.auth import login, authenticate
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework import viewsets, status
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
 
 from .forms import UserRegisterForm, UserLoginForm
 from .models import Category, Image
@@ -30,6 +32,17 @@ class CategoryViewSet(viewsets.ModelViewSet):
         request.data['user'] = request.user.id
         return super().create(request, *args, **kwargs)
 
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class ImageViewSet(viewsets.ModelViewSet):
+    serializer_class = ImageSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Image.objects.filter(category__user=self.request.user)
+
+# api
 def index(request):
     return render(request, 'index.html')
 
@@ -145,3 +158,84 @@ def user_login(request):
         form = UserLoginForm()
 
     return render(request, 'login.html', {'form': form})
+
+@csrf_exempt
+def save_categories(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            categories_data = data.get('categories', {})
+
+            user = request.user
+            for category_name, images in categories_data.items():
+                category, _ = Category.objects.get_or_create(name=category_name, user=user)
+                category.images = images  # Store images in JSON field
+                category.save()
+
+            return JsonResponse({'message': 'Categories and images saved successfully!'}, status=201)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+@csrf_exempt
+def fetch_categories(request):
+    if request.method == 'GET':
+        try:
+            categories = Category.objects.filter(user=request.user)
+            categories_data = [
+                {"name": category.name, "images": category.images} for category in categories
+            ]
+            return JsonResponse(categories_data, safe=False, status=200)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+@csrf_exempt
+def delete_category(request):
+    if request.method == 'DELETE':
+        try:
+            data = json.loads(request.body)
+            category_name = data.get('category')
+
+            if not category_name:
+                return JsonResponse({'error': 'Category name is required'}, status=400)
+
+            category = Category.objects.filter(name=category_name).first()
+            if not category:
+                return JsonResponse({'error': 'Category not found'}, status=404)
+
+            category.delete()
+            return JsonResponse({'message': 'Category deleted successfully'})
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+@api_view(['DELETE'])
+def delete_image(request):
+    category_name = request.data.get('category')
+    image_name = request.data.get('name')
+
+    if not category_name or not image_name:
+        return Response({'error': 'Missing category or image name'}, status=400)
+
+    category = get_object_or_404(Category, name=category_name)
+
+    if not isinstance(category.images, list):
+        return Response({'error': 'Invalid images format'}, status=500)
+
+    updated_images = [img for img in category.images if img.get("name") != image_name]
+
+    if len(updated_images) == len(category.images):
+        return Response({'error': 'Image not found in this category'}, status=404)
+
+    category.images = updated_images
+    category.save()  # Save changes
+
+    return Response({'message': f'Image "{image_name}" deleted from category "{category_name}".'})

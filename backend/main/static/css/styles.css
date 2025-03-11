@@ -81,6 +81,11 @@ body {
     background-color: #f9f9f9;
 }
 
+.selected-category {
+    border: 2px solid gold;
+    background-color: #95ab9b;
+}
+
 .category-section {
     margin: 20px 0;
     padding: 10px;

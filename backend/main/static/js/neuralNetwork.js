@@ -79,7 +79,7 @@ const neuralNetworkModule = (() => {
 
     const updateNetwork = () => {
         layers[0].neurons = gridModule.getCols() * gridModule.getRows();
-        layers[layers.length - 1].neurons = Object.keys(galleryModule.getCategories()).length;
+        layers[layers.length - 1].neurons = galleryModule.getChosenCategories().size;
         document.getElementById('train-nn').disabled = layers[layers.length - 1].neurons < 2; // should be at least 2 categories
         drawNetwork();
     }
@@ -87,7 +87,7 @@ const neuralNetworkModule = (() => {
     const resetNetwork = () => {
         layers = [
             { name: 'Input Layer', neurons: gridModule.getCols() * gridModule.getRows(), fixed: true },
-            { name: 'Output Layer', neurons: Object.keys(galleryModule.getCategories()).length, fixed: true }
+            { name: 'Output Layer', neurons: galleryModule.getChosenCategories().size, fixed: true }
         ];
         document.getElementById('train-nn').disabled = layers[layers.length - 1].neurons < 2;
         updateLayersDropdown();

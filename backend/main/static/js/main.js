@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     gridModule.createGrid(8, 8);
     neuralNetworkModule.drawNetwork();
     networkParamsModule.initializeNetworkParams();
-
+    galleryModule.syncDatabaseAndStorage();
 
     // Grid controls
     document.getElementById('smallGridButton').addEventListener('click', () => gridModule.resizeGrid(8, 8));

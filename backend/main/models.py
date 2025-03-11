@@ -13,15 +13,13 @@ class NeuralNetwork(models.Model):
 
 class Category(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="categories")
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(unique=True, blank=True)
-    images = models.ManyToManyField('Image', related_name="categories")
+    images = models.JSONField(default=list)  # Store images directly in JSON format
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            base_slug = slugify(self.name)
-            unique_id = str(uuid.uuid4())[:8]
-            self.slug = f"{base_slug}-{unique_id}"
+            self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -30,6 +28,7 @@ class Category(models.Model):
 class Image(models.Model):
     name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
+    image = models.JSONField()
 
     def __str__(self):
         return self.name
