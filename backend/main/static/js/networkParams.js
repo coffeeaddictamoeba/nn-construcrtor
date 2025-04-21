@@ -96,7 +96,7 @@ const networkParamsModule = (() => {
         setActivationParams();
     }
 
-    const getCsrfToken = () => {
+    const getCSRFToken = () => {
         return document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
     };
 
@@ -120,11 +120,11 @@ const networkParamsModule = (() => {
     const sendNetworkConfigToBackend = () => {
         const networkConfig = {
             layers: neuralNetworkModule.getLayers(),
-            parameters: networkParamsModule.getParameters(),
-            categories: galleryModule.getChosenCategories()
+            parameters: getNetworkParams(),
+            categories: Array.from(galleryModule.getChosenCategories())
         };
 
-        fetch('/train_network/', {
+        fetch('/api/train_network/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
             body: JSON.stringify(networkConfig)

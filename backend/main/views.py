@@ -69,40 +69,28 @@ def index(request):
 def train_network(request):
     if request.method == 'POST':
         try:
-            data = json.loads(request.body)
+            data = json.loads(request.body.decode('utf-8'))
+
             user = request.user
+            layers = data.get('layers', {})
             parameters = data.get('parameters', {})
             categories = data.get('categories', [])
 
-            print(f"User: {user}, Parameters: {parameters}, Categories: {categories}")
+            print(f"User: {user}, Layers: {layers} Parameters: {parameters}, Categories: {categories}")
 
-            # Fetch categories linked to the user
             selected_categories = Category.objects.filter(name__in=categories, user=user)
 
-            # Extract image data
             training_data = []
             for category in selected_categories:
-                training_data.extend(category.images)  # Assuming images are stored as JSON
+                training_data.extend(category.images)
 
             if not training_data:
                 return JsonResponse({'error': 'No images found for selected categories'}, status=400)
 
-            # Create NeuralNetwork instance
             nn = NeuralNetwork.objects.create(user=user, params=parameters, status="Training")
+            set_nn_params(nn, selected_categories)
 
-            # Link categories to NeuralNetwork
-            nn.categories.set(selected_categories)
-
-            # Train the model (you need to implement `train_nn`)
-            accuracy, loss = 99, 0.1  # Your training function
-
-            # Update model after training
-            nn.accuracy = accuracy
-            nn.loss = loss
-            nn.status = "Trained"
-            nn.save()
-
-            return JsonResponse({'accuracy': accuracy, 'loss': loss, 'status': "Trained"}, status=200)
+            return JsonResponse({'accuracy': nn.accuracy, 'loss': nn.loss, 'status': "Trained"}, status=200)
 
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
@@ -178,7 +166,7 @@ def user_login(request):
 
             if user is not None:
                 login(request, user)
-                return redirect("index")  # Redirect to the home page
+                return redirect("index")
             else:
                 form.add_error(None, "Invalid username or password")
 
@@ -197,7 +185,7 @@ def save_categories(request):
             user = request.user
             for category_name, images in categories_data.items():
                 category, _ = Category.objects.get_or_create(name=category_name, user=user)
-                category.images = images  # Store images in JSON field
+                category.images = images
                 category.save()
 
             return JsonResponse({'message': 'Categories and images saved successfully!'}, status=201)
@@ -299,3 +287,13 @@ def image_path(image_name: str, ext: str):
     print(f"Image path: {file_path}")
 
     return file_path
+
+def set_nn_params(nn: NeuralNetwork, categories: dict):
+    nn.categories.set(categories)
+
+    accuracy, loss = 99, 0.1  # training function here
+
+    nn.accuracy = accuracy
+    nn.loss = loss
+    nn.status = "Trained"
+    nn.save()
