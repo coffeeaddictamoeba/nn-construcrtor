@@ -87,7 +87,9 @@ def train_network(request):
             if not training_data:
                 return JsonResponse({'error': 'No images found for selected categories'}, status=400)
 
-            nn = NeuralNetwork.objects.create(user=user, params=parameters, status="Training")
+            config = merge_nn_config(layers, parameters)
+
+            nn = NeuralNetwork.objects.create(user=user, params=config, status="Training")
             set_nn_params(nn, selected_categories)
 
             return JsonResponse({'accuracy': nn.accuracy, 'loss': nn.loss, 'status': "Trained"}, status=200)
@@ -287,6 +289,28 @@ def image_path(image_name: str, ext: str):
     print(f"Image path: {file_path}")
 
     return file_path
+
+def merge_nn_config(layers, parameters):
+    activations = parameters.get('activationFunctions', {})
+    merged_layers = []
+
+    for layer in layers:
+        merged_layer = {
+            'name': layer['name'],
+            'neurons': layer['neurons'],
+            'activation': activations.get(layer['name'])
+        }
+        merged_layers.append(merged_layer)
+
+    print({
+        'layers': merged_layers,
+        'loss': parameters.get('loss')
+    })
+
+    return {
+        'layers': merged_layers,
+        'loss': parameters.get('loss')
+    }
 
 def set_nn_params(nn: NeuralNetwork, categories: dict):
     nn.categories.set(categories)

@@ -124,19 +124,22 @@ const networkParamsModule = (() => {
             categories: Array.from(galleryModule.getChosenCategories())
         };
 
-        fetch('/api/train_network/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
-            body: JSON.stringify(networkConfig)
-        })
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('accuracy-value').textContent = data.accuracy.toFixed(2);
-            document.getElementById('loss-value').textContent = data.loss.toFixed(2);
-            document.getElementById('status-value').textContent = data.status;
-            loadModels();
-        })
-        .catch(error => console.error('Error:', error));
+        if (confirm("Your current network parameters: \nLayers: " + JSON.stringify(networkConfig.layers) + "\nParameters: " + JSON.stringify(networkConfig.parameters))) {
+            fetch('/api/train_network/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+                body: JSON.stringify(networkConfig)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('accuracy-value').textContent = data.accuracy.toFixed(2);
+                document.getElementById('loss-value').textContent = data.loss.toFixed(2);
+                document.getElementById('status-value').textContent = data.status;
+                loadModels();
+            })
+            .catch(error => console.error('Error:', error));
+        }
+        else return;
     };
 
     return {
