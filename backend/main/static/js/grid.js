@@ -1,7 +1,7 @@
 const gridModule = (() => {
     let currentGrid = [];
     let gridSize = { rows: 8, cols: 8 };
-    let selectedColor = 'black';
+    let selectedColor = '#000000'; // black
     let isMouseDown = false;
 
     document.addEventListener('mousedown', () => isMouseDown = true);
@@ -10,7 +10,7 @@ const gridModule = (() => {
     const gridContainer = document.getElementById('grid-container');
 
     const createEmptyGrid = (rows, cols) =>
-        Array.from({ length: rows }, () => Array(cols).fill('white'));
+        Array.from({ length: rows }, () => Array(cols).fill('#FFFFFF')); // fill with white
 
     const createGrid = (rows, cols) => {
         currentGrid = createEmptyGrid(rows, cols);

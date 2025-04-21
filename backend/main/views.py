@@ -1,8 +1,8 @@
-import base64
 import os
 import json
+import ast
 import numpy as np
-import tensorflow as tf
+#import tensorflow as tf
 
 from django.contrib.auth import login, authenticate
 from django.shortcuts import render, redirect, get_object_or_404
@@ -11,13 +11,13 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
 from .forms import UserRegisterForm, UserLoginForm
-from .models import Category, Image
+from .models import Category, Image, NeuralNetwork
 from .serializers import CategorySerializer, ImageSerializer
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import IsAuthenticated
 
-#from neural_network import *
+from PIL import Image as PILImage
 
 UPLOAD_DIR = "uploads"
 
@@ -46,30 +46,80 @@ class ImageViewSet(viewsets.ModelViewSet):
 def index(request):
     return render(request, 'index.html')
 
-def save_network_config(request):
+# def save_network_config(request):
+#     if request.method == 'POST':
+#         try:
+#             data = json.loads(request.body)
+#             layers = data.get('layers', [])
+#             parameters = data.get('parameters', {})
+#
+#             print("Received Layers:", layers)
+#             print("Received Parameters:", parameters)
+#
+#             file_path = os.path.join("network_config.json")
+#             with open(file_path, 'w') as f:
+#                 json.dump(data, f, indent=4)
+#
+#             return JsonResponse({'message': 'Configuration saved successfully!'}, status=200)
+#         except json.JSONDecodeError:
+#             return JsonResponse({'error': 'Invalid JSON'}, status=400)
+#     return JsonResponse({'error': 'Invalid request method'}, status=405)
+# Import necessary models
+
+def train_network(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            layers = data.get('layers', [])
+            user = request.user
             parameters = data.get('parameters', {})
+            categories = data.get('categories', [])
 
-            print("Received Layers:", layers)
-            print("Received Parameters:", parameters)
+            print(f"User: {user}, Parameters: {parameters}, Categories: {categories}")
 
-            file_path = os.path.join("network_config.json")
-            with open(file_path, 'w') as f:
-                json.dump(data, f, indent=4)
+            # Fetch categories linked to the user
+            selected_categories = Category.objects.filter(name__in=categories, user=user)
 
-            return JsonResponse({'message': 'Configuration saved successfully!'}, status=200)
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+            # Extract image data
+            training_data = []
+            for category in selected_categories:
+                training_data.extend(category.images)  # Assuming images are stored as JSON
+
+            if not training_data:
+                return JsonResponse({'error': 'No images found for selected categories'}, status=400)
+
+            # Create NeuralNetwork instance
+            nn = NeuralNetwork.objects.create(user=user, params=parameters, status="Training")
+
+            # Link categories to NeuralNetwork
+            nn.categories.set(selected_categories)
+
+            # Train the model (you need to implement `train_nn`)
+            accuracy, loss = 99, 0.1  # Your training function
+
+            # Update model after training
+            nn.accuracy = accuracy
+            nn.loss = loss
+            nn.status = "Trained"
+            nn.save()
+
+            return JsonResponse({'accuracy': accuracy, 'loss': loss, 'status': "Trained"}, status=200)
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
-def load_model():
-    return tf.keras.models.load_model("trained_model.h5")
+def get_models(request):
+    user = request.user
+    models = NeuralNetwork.objects.filter(user=user, status="Trained").values('id', 'name', 'accuracy')
+
+    return JsonResponse(list(models), safe=False)
+
+# def load_model():
+#     return tf.keras.models.load_model("trained_model.h5")
 
 @csrf_exempt
-def predict(request):
+def predict(request): # TODO: create model loading and predicting logic
     if request.method == 'POST':
         try:
             model = load_model()
@@ -89,41 +139,19 @@ def save_image(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-
             image_name = data.get('name')
             category_name = data.get('category')
-            image_data = data.get('data')
+            image_data = ast.literal_eval(data.get('data'))
 
             if not image_name or not category_name or not image_data:
-                return JsonResponse({'error': 'Missing fields'}, status=400)
+                return JsonResponse({'error': 'Missing fields (image_name, category_name or image_data)'}, status=400)
 
-            # Decode base64 image
-            format, imgstr = image_data.split(';base64,')
-            ext = format.split('/')[-1]
-
-            if ext not in ['png', 'jpg', 'jpeg']:
-                return JsonResponse({'error': 'Invalid image format'}, status=400)
-
-            # Ensure upload directory exists
-            if not os.path.exists(UPLOAD_DIR):
-                os.makedirs(UPLOAD_DIR)
-
-            file_path = os.path.join(UPLOAD_DIR, f"{image_name}.{ext}")
-
-            # Save image file
-            with open(file_path, "wb") as f:
-                f.write(base64.b64decode(imgstr))
-
-            # Save metadata to database
-            category, _ = Category.objects.get_or_create(name=category_name)
-            image = Image.objects.create(name=image_name, category=category, file_name=f"{image_name}.{ext}")
+            save_as_png(image_data, path=image_path(image_name, 'png'))
 
             return JsonResponse({'message': f'Image "{image_name}" saved successfully!'}, status=201)
 
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON'}, status=400)
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
+        except json.JSONDecodeError: return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        except Exception as e: return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
@@ -236,6 +264,38 @@ def delete_image(request):
         return Response({'error': 'Image not found in this category'}, status=404)
 
     category.images = updated_images
-    category.save()  # Save changes
+    category.save()
 
     return Response({'message': f'Image "{image_name}" deleted from category "{category_name}".'})
+
+def save_as_png(data: list, path: str):
+    """Creates and saves image in .png format
+    - Data (list): [["hex color", "hex color", ... "hex color"], ...]
+    - Path (str): "path/to/your/image" or "path/to/your/image.png"
+    """
+    print(f"Image data ({type(data)}): {data}")
+
+    length = len(data)
+    width = len(data[0])
+
+    img = PILImage.new('RGB', (length, width))
+
+    for y in range(length):
+        for x in range(width):
+            hexcol = data[y][x]
+            rgb = tuple(int(hexcol[i:i+2], 16) for i in (1, 3, 5))
+            img.putpixel((x,y), rgb)
+    
+    if not '.png' in path:
+        img.save(f'{path}.png')
+    else:
+        img.save(f'{path}')
+
+def image_path(image_name: str, ext: str):
+    if not os.path.exists(UPLOAD_DIR):
+        os.makedirs(UPLOAD_DIR)
+
+    file_path = os.path.join(UPLOAD_DIR, f"{image_name}.{ext}")
+    print(f"Image path: {file_path}")
+
+    return file_path

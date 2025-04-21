@@ -100,35 +100,42 @@ const networkParamsModule = (() => {
         return document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
     };
 
-    const sendNetworkConfigToBackend = () => {
-        const networkData = {
-            layers: neuralNetworkModule.getLayers(),
-            parameters: networkParamsModule.getNetworkParams()
-        };
-
-        fetch('/api/save-network-config/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCsrfToken()
-            },
-            body: JSON.stringify(networkData)
-        })
+    const loadModels = () => {
+        fetch('/api/models/')
         .then(response => response.json())
-        .then(data => console.log('Server response:', data))
-        .catch(error => console.error('Error:', error));
+        .then(models => {
+            const dropdown = document.getElementById("model-dropdown");
+            dropdown.innerHTML = "";
+
+            models.forEach(model => {
+                let option = document.createElement("option");
+                option.value = model.id;
+                option.textContent = `${model.name} (Acc: ${model.accuracy.toFixed(2)})`;
+                dropdown.appendChild(option);
+            });
+        })
+        .catch(error => console.error("Error loading models:", error));
     };
 
-    const sendPredictionRequest = (inputData) => {
-        fetch('/api/predict/', {
+    const sendNetworkConfigToBackend = () => {
+        const networkConfig = {
+            layers: neuralNetworkModule.getLayers(),
+            parameters: networkParamsModule.getParameters(),
+            categories: galleryModule.getChosenCategories()
+        };
+
+        fetch('/train_network/', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ input: inputData })
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+            body: JSON.stringify(networkConfig)
         })
         .then(response => response.json())
-        .then(data => console.log('Prediction:', data.prediction))
+        .then(data => {
+            document.getElementById('accuracy-value').textContent = data.accuracy.toFixed(2);
+            document.getElementById('loss-value').textContent = data.loss.toFixed(2);
+            document.getElementById('status-value').textContent = data.status;
+            loadModels();
+        })
         .catch(error => console.error('Error:', error));
     };
 
@@ -136,7 +143,7 @@ const networkParamsModule = (() => {
         updateActivationParams,
         initializeNetworkParams,
         getNetworkParams,
-        sendNetworkConfigToBackend,
-        sendPredictionRequest
+        loadModels,
+        sendNetworkConfigToBackend
     };
 })();

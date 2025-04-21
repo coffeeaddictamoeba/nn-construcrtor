@@ -6,16 +6,19 @@ from django.utils.text import slugify
 class NeuralNetwork(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="neural_networks")
     params = models.JSONField()
+    accuracy = models.FloatField(default=0.0)
+    loss = models.FloatField(default=0.0)
+    status = models.CharField(max_length=20, default="Not Trained")
     categories = models.ManyToManyField('Category', related_name="neural_networks")
 
     def __str__(self):
-        return f"NeuralNetwork {self.id} by {self.user.username}"
+        return f"NeuralNetwork {self.id} by {self.user.username} - {self.status}"
 
 class Category(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="categories")
     name = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(unique=True, blank=True)
-    images = models.JSONField(default=list)  # Store images directly in JSON format
+    images = models.JSONField(default=list)
 
     def save(self, *args, **kwargs):
         if not self.slug:

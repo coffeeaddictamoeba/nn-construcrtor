@@ -11,23 +11,22 @@
 	</head>
 
 	<body>
-        <div id="user-info">
-            {% if user.is_authenticated %}
-                Logged in as: <strong>{{ user.username }}</strong>
-                <form method="post" action="{% url 'logout' %}" style="display:inline;">
-                    {% csrf_token %}
-                    <button id="logout-button" type="submit">Logout</button>
-                </form>
-            {% endif %}
-        </div>
-        <p></p>
-    
-		<div id="palette-and-grid">
+
+        <div id="palette-and-grid">
 
 			<!-- Color palette for adjusting the grid color -->
 			<div id="color-palette"></div>
 			<div>
-				<h3 align=center style="margin-top:0; color:lightgoldenrodyellow">Let's create some data for your AI!</h3>
+				<div id="user-info">
+					{% if user.is_authenticated %}
+						Logged in as: <strong>{{ user.username }}</strong>
+						<form method="post" action="{% url 'logout' %}" style="display:inline;">
+							{% csrf_token %}
+							<button id="logout-button" type="submit">Logout</button>
+						</form>
+					{% endif %}
+					<p></p>
+				</div>
 
 				<!-- Grid for creating data for neural network -->
 				<div id="grid-container"></div>
@@ -87,6 +86,14 @@
 				<div id="activation-params"></div>
 				<div><br></div>
 				<div id="loss-params"></div>
+				<div><br></div>
+
+				<div id="accuracy-and-results">
+					<p>Your models: <select id="model-dropdown"></select></p>
+					<p>Accuracy: <span id="accuracy-value">N/A</span></p>
+					<p>Loss: <span id="loss-value">N/A</span></p>
+					<p>Status: <span id="status-value">Not Trained</span></p>
+				</div>
 			</div>
 
 		</div>

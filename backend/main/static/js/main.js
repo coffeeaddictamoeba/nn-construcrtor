@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     gridModule.createGrid(8, 8);
     neuralNetworkModule.drawNetwork();
     networkParamsModule.initializeNetworkParams();
+    networkParamsModule.loadModels();
     galleryModule.syncDatabaseAndStorage();
 
     // Grid controls
@@ -23,7 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('confirm-remove-neuron').addEventListener('click', neuralNetworkModule.removeNeuron);
     document.getElementById('reset-nn').addEventListener('click', neuralNetworkModule.resetNetwork);
 
-    // TODO: add logic for images save handling
     document.getElementById('saveAllImagesButton').addEventListener('click', galleryModule.sendAllImagesData);
     document.getElementById('train-nn').addEventListener('click', networkParamsModule.sendNetworkConfigToBackend);
 
