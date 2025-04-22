@@ -3,6 +3,7 @@ const networkParamsModule = (() => {
 
     let learningRate = 1e-3;
     let layersParams = {};
+    let networkName = "";
 
     const activationContainer = document.getElementById('activation-params');
     const lossContainer = document.getElementById('loss-params');
@@ -92,6 +93,10 @@ const networkParamsModule = (() => {
         };
     };
 
+    const setNetworkName = () => {
+        networkName = prompt('Enter a name for new model:', 'Model' + (Object.keys(document.getElementById("model-dropdown")) + 1));
+    }
+
     const updateActivationParams = () => {
         setActivationParams();
     }
@@ -117,14 +122,37 @@ const networkParamsModule = (() => {
         .catch(error => console.error("Error loading models:", error));
     };
 
+    const formatNetworkConfig = (config) => {
+        const { layers, parameters, categories } = config;
+        const activations = parameters.activationFunctions || {};
+        const loss = parameters.loss;
+    
+        let layerInfo = layers.map(layer => {
+            const name = layer.name;
+            const neurons = layer.neurons;
+            const activation = activations[name] || "N/A";
+            return `- ${name}: ${neurons} neurons, activation ${activation}`;
+        }).join('\n');
+    
+        let categoryInfo = categories.map(cat => `- ${cat}`).join('\n');
+    
+        return `Your current network parameters:\n\nLayers:\n${layerInfo}\n\nLoss: ${loss}\n\nCategories:\n${categoryInfo}`;
+    };    
+
     const sendNetworkConfigToBackend = () => {
+        setNetworkName();
+        if (networkName == "") return;
+        
         const networkConfig = {
+            name: networkName,
             layers: neuralNetworkModule.getLayers(),
             parameters: getNetworkParams(),
             categories: Array.from(galleryModule.getChosenCategories())
         };
 
-        if (confirm("Your current network parameters: \nLayers: " + JSON.stringify(networkConfig.layers) + "\nParameters: " + JSON.stringify(networkConfig.parameters))) {
+        const formatted = formatNetworkConfig(networkConfig);
+
+        if (confirm(formatted)) {
             fetch('/api/train_network/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },

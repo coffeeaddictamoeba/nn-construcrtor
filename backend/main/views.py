@@ -2,7 +2,7 @@ import os
 import json
 import ast
 import numpy as np
-#import tensorflow as tf
+import tensorflow as tf
 
 from django.contrib.auth import login, authenticate
 from django.shortcuts import render, redirect, get_object_or_404
@@ -18,6 +18,8 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import IsAuthenticated
 
 from PIL import Image as PILImage
+from .neural_network import train
+#from train import CustomModel, Layer
 
 UPLOAD_DIR = "uploads"
 
@@ -72,11 +74,12 @@ def train_network(request):
             data = json.loads(request.body.decode('utf-8'))
 
             user = request.user
+            name = data.get('name')
             layers = data.get('layers', {})
             parameters = data.get('parameters', {})
             categories = data.get('categories', [])
 
-            print(f"User: {user}, Layers: {layers} Parameters: {parameters}, Categories: {categories}")
+            print(f"User: {user}, Name: {name}, Layers: {layers}, Parameters: {parameters}, Categories: {categories}")
 
             selected_categories = Category.objects.filter(name__in=categories, user=user)
 
@@ -89,7 +92,7 @@ def train_network(request):
 
             config = merge_nn_config(layers, parameters)
 
-            nn = NeuralNetwork.objects.create(user=user, params=config, status="Training")
+            nn = NeuralNetwork.objects.create(user=user, params=config, name=name, status="Training")
             set_nn_params(nn, selected_categories)
 
             return JsonResponse({'accuracy': nn.accuracy, 'loss': nn.loss, 'status': "Trained"}, status=200)
@@ -314,6 +317,9 @@ def merge_nn_config(layers, parameters):
 
 def set_nn_params(nn: NeuralNetwork, categories: dict):
     nn.categories.set(categories)
+    print("SET NN REACHED")
+
+    user_model = extract_nn_params(nn)
 
     accuracy, loss = 99, 0.1  # training function here
 
@@ -321,3 +327,36 @@ def set_nn_params(nn: NeuralNetwork, categories: dict):
     nn.loss = loss
     nn.status = "Trained"
     nn.save()
+
+def extract_nn_params(nn):
+    data = nn.params if isinstance(nn.params, dict) else json.loads(nn.params)
+    
+    layers = data.get('layers', [])
+    print(f"Data for extraction ({type(layers)}): {layers}")
+    
+    lr = float(data.get('loss'))
+    print(f"Learning rate ({type(lr)}): {lr}")
+
+    model_layers = []
+    start_shape = 0
+    num_classes = 0
+
+    for layer_data in layers:
+        lrname = layer_data.get('name')
+        neurons = int(layer_data.get('neurons'))
+        activation = layer_data.get('activation')
+
+        if lrname == 'Input Layer':
+            start_shape = (neurons**0.5, neurons**0.5)
+            print(f'Shape: {start_shape}')
+        elif lrname == 'Output Layer':
+            num_classes = neurons
+            print(f'Classes amount: {num_classes}')
+
+        model_layers.append(train.Layer(neurons, activation))
+
+    user_model = train.CustomModel(start_shape, num_classes)
+    print(f'Model Layers: {model_layers}')
+    user_model.build(model_layers)
+
+    return user_model

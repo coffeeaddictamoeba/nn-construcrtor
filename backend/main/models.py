@@ -5,6 +5,7 @@ from django.utils.text import slugify
 
 class NeuralNetwork(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="neural_networks")
+    name = models.CharField(max_length=255, unique=True, default='UserModel')
     params = models.JSONField()
     accuracy = models.FloatField(default=0.0)
     loss = models.FloatField(default=0.0)

@@ -174,3 +174,4 @@ backend/main/uploads/
 backend/network_config.json
 .idea
 uploads
+neural_network/models
